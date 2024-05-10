@@ -668,3 +668,235 @@ WHERE id_facultad NOT IN (
 |           9 | Biología y Geología   |
 +-------------+-----------------------+
 ```
+
+## Procedimientos
+1. Crear nuevo alumno.
+```sql
+CREATE PROCEDURE sp_CrearAlumno (
+    IN nif VARCHAR(9),
+    IN nombre VARCHAR(25),
+    IN apellido1 VARCHAR(50),
+    IN apellido2 VARCHAR(50),
+    IN fecha_nacimiento DATE,
+    IN id_genero INT,
+    IN direccion VARCHAR(50),
+    IN id_ciudad INT
+)
+BEGIN
+    INSERT INTO alumno (nif, nombre, apellido1, apellido2, fecha_nacimiento, id_genero, direccion, id_ciudad)
+    VALUES (nif, nombre, apellido1, apellido2, fecha_nacimiento, id_genero, direccion, id_ciudad);
+END;
+```
+2. Actualizar datos de alumno.
+```sql
+CREATE PROCEDURE sp_ActualizarAlumno (
+    IN id_alumno INT,
+    IN nuevo_nif VARCHAR(9),
+    IN nuevo_nombre VARCHAR(25),
+    IN nuevo_apellido1 VARCHAR(50),
+    IN nuevo_apellido2 VARCHAR(50),
+    IN nueva_fecha_nacimiento DATE,
+    IN nuevo_id_genero INT,
+    IN nueva_direccion VARCHAR(50),
+    IN nuevo_id_ciudad INT
+)
+BEGIN
+    UPDATE alumno
+    SET nif = nuevo_nif, 
+        nombre = nuevo_nombre, 
+        apellido1 = nuevo_apellido1, 
+        apellido2 = nuevo_apellido2, 
+        fecha_nacimiento = nueva_fecha_nacimiento,
+        id_genero = nuevo_id_genero,
+        direccion = nueva_direccion,
+        id_ciudad = nuevo_id_ciudad
+    WHERE id_alumno = id_alumno;
+END;
+```
+3. Eliminar alumno por ID.
+```sql
+CREATE PROCEDURE sp_EliminarAlumnoPorID (
+    IN id_alumno INT
+)
+BEGIN
+    DELETE FROM alumno
+    WHERE id_alumno = id_alumno;
+END;
+```
+4. Buscar alumno por NIF.
+```sql
+CREATE PROCEDURE sp_BuscarAlumnoPorNIF (
+    IN buscar_nif VARCHAR(9)
+)
+BEGIN
+    SELECT *
+    FROM alumno
+    WHERE nif = buscar_nif;
+END;
+```
+5. Crear nuevo profesor.
+```sql
+CREATE PROCEDURE sp_CrearProfesor (
+    IN nuevo_nif VARCHAR(9),
+    IN nuevo_nombre VARCHAR(25),
+    IN nuevo_apellido1 VARCHAR(50),
+    IN nuevo_apellido2 VARCHAR(50),
+    IN nueva_fecha_nacimiento DATE,
+    IN nuevo_id_genero INT,
+    IN nueva_direccion VARCHAR(50),
+    IN nuevo_id_ciudad INT,
+    IN nuevo_id_facultad INT
+)
+BEGIN
+    INSERT INTO profesor (nif, nombre, apellido1, apellido2, fecha_nacimiento, id_genero, direccion, id_ciudad, id_facultad)
+    VALUES (nuevo_nif, nuevo_nombre, nuevo_apellido1, nuevo_apellido2, nueva_fecha_nacimiento, nuevo_id_genero, nueva_direccion, nuevo_id_ciudad, nuevo_id_facultad);
+END;
+```
+6. Actualizar datos de profesor.
+```sql
+CREATE PROCEDURE sp_ActualizarProfesor (
+    IN id_profesor INT,
+    IN nuevo_nif VARCHAR(9),
+    IN nuevo_nombre VARCHAR(25),
+    IN nuevo_apellido1 VARCHAR(50),
+    IN nuevo_apellido2 VARCHAR(50),
+    IN nueva_fecha_nacimiento DATE,
+    IN nuevo_id_genero INT,
+    IN nueva_direccion VARCHAR(50),
+    IN nuevo_id_ciudad INT,
+    IN nuevo_id_facultad INT
+)
+BEGIN
+    UPDATE profesor
+    SET nif = nuevo_nif, 
+        nombre = nuevo_nombre, 
+        apellido1 = nuevo_apellido1, 
+        apellido2 = nuevo_apellido2, 
+        fecha_nacimiento = nueva_fecha_nacimiento,
+        id_genero = nuevo_id_genero,
+        direccion = nueva_direccion,
+        id_ciudad = nuevo_id_ciudad,
+        id_facultad = nuevo_id_facultad
+    WHERE id_profesor = id_profesor;
+END;
+```
+7. Eliminar profesor por ID.
+```sql
+CREATE PROCEDURE sp_EliminarProfesorPorID (
+    IN id_profesor INT
+)
+BEGIN
+    DELETE FROM profesor
+    WHERE id_profesor = id_profesor;
+END;
+```
+8. Buscar profesor por NIF.
+```sql
+CREATE PROCEDURE sp_BuscarProfesorPorNIF (
+    IN buscar_nif VARCHAR(9)
+)
+BEGIN
+    SELECT *
+    FROM profesor
+    WHERE nif = buscar_nif;
+END;
+```
+9. Crear nueva asignatura.
+```sql
+CREATE PROCEDURE sp_CrearAsignatura (
+    IN nuevo_nombre VARCHAR(100),
+    IN nuevo_creditos FLOAT,
+    IN nuevo_id_tipo_asignatura INT,
+    IN nuevo_id_grado INT,
+    IN nuevo_id_profesor INT
+)
+BEGIN
+    INSERT INTO asignatura (nombre, creditos, id_tipo_asignatura, id_grado, id_profesor)
+    VALUES (nuevo_nombre, nuevo_creditos, nuevo_id_tipo_asignatura, nuevo_id_grado, nuevo_id_profesor);
+END;
+```
+10. Eliminar asignatura por ID.
+```sql
+CREATE PROCEDURE sp_EliminarAsignaturaPorID (
+    IN id_asignatura INT
+)
+BEGIN
+    DELETE FROM asignatura
+    WHERE id_asignatura = id_asignatura;
+END;
+```
+## Vistas
+1. Vista de alumnos.
+```sql
+CREATE VIEW vw_Alumnos AS
+SELECT *
+FROM alumno;
+```
+2. Vista de profesores.
+```sql
+CREATE VIEW vw_Profesores AS
+SELECT *
+FROM profesor;
+```
+3. Vista de asignaturas por profesor.
+```sql
+CREATE VIEW vw_AsignaturasPorProfesor AS
+SELECT p.id_profesor, p.nombre AS nombre_profesor, a.*
+FROM profesor p
+LEFT JOIN asignatura a ON p.id_profesor = a.id_profesor;
+```
+4. Vista de asignaturas sin profesor asignado.
+```sql
+CREATE VIEW vw_AsignaturasSinProfesor AS
+SELECT *
+FROM asignatura
+WHERE id_profesor IS NULL;
+```
+5. Vista de asignaturas por tipo.
+```sql
+CREATE VIEW vw_AsignaturasPorTipo AS
+SELECT ta.tipo_asignatura, COUNT(*) AS total_asignaturas
+FROM asignatura a
+JOIN tipo_asignatura ta ON a.id_tipo_asignatura = ta.id_tipo
+GROUP BY ta.tipo_asignatura;
+```
+6. Vista de grados y número de asignaturas.
+```sql
+CREATE VIEW vw_GradosYAsignaturas AS
+SELECT g.grado AS nombre_grado, COUNT(a.id_asignatura) AS total_asignaturas
+FROM grado g
+LEFT JOIN asignatura a ON g.id_grado = a.id_grado
+GROUP BY g.grado;
+```
+7. Vista de asignaturas por curso.
+```sql
+CREATE VIEW vw_AsignaturasPorCurso AS
+SELECT c.anyo_inicio AS curso_escolar, COUNT(m.id_asignatura) AS total_asignaturas
+FROM curso c
+LEFT JOIN matricula m ON c.id_curso = m.id_curso
+GROUP BY c.anyo_inicio;
+```
+8. Vista de contactos de alumnos.
+```sql
+CREATE VIEW vw_ContactosAlumnos AS
+SELECT *
+FROM contacto
+WHERE id_alumno IS NOT NULL;
+```
+9. Vista de profesores sin departamento.
+```sql
+CREATE VIEW vw_ProfesoresSinDepartamento AS
+SELECT *
+FROM profesor
+WHERE id_facultad IS NULL;
+```
+10. Vista de departamentos sin profesores.
+```sql
+CREATE VIEW vw_DepartamentosSinProfesores AS
+SELECT *
+FROM facultad
+WHERE id_facultad NOT IN (
+    SELECT DISTINCT id_facultad
+    FROM profesor
+);
+```
